@@ -1,0 +1,57 @@
+.choose-btn{
+    margin-top: 20vh;
+    border:5px solid rgb(44, 187, 132);
+    background:rgb(178, 235, 164);
+    text-align: center;
+    border-radius: 15%;
+    width: 30vw;
+    height: 50vh;
+
+}
+
+body{
+    background: whitesmoke;
+}
+header{
+    margin-bottom: 1ovh;
+    background: black;
+    color: white;
+    text-align: center;
+    height: 10vh;
+    font-size: 5em;
+}
+#grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    width: 50vh;
+    height: 50vh;
+    margin-left: 40%;
+    margin-top: 10vh;
+    
+}
+.square{
+    display: block;
+    border: 1px solid black;
+    font-size: 7em;
+    text-align: center;
+}
+
+.reset-btn{
+    background: rgb(44, 187, 132);
+    color: white;
+    font-size: 1.5em;
+margin-left: 45%;
+  width: 15vh;
+  height: 7vh;
+  margin-bottom: 1000vh;
+}
+#multiplayer-btn{
+  margin-left: 20%;
+
+}
+.win-message{
+    max-height: 1vh;
+    font-size: 3em;
+    margin-left: 43%;
+}
