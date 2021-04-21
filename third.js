@@ -1,6 +1,19 @@
-const Player = (symbol) => {
-   let type = 'person'
+const Player = (symbol, type, operation) => {
   return{symbol, type}
+}
+let playerOne; 
+let playerTwo;
+function setUpGame(mode){
+  if(mode === 'multiplayer'){
+    playerOne = Player('x', 'person');
+    playerTwo = Player('o', 'person');
+    
+  }
+  else{
+    playerOne = Player('x', 'person');
+    playerTwo = Player('o', 'robot')
+  };
+  return{mode}
 }
 
 const gameBoard = (() => {
@@ -42,18 +55,27 @@ const gameBoard = (() => {
      
 return{logMove, checkForWin, checkForTie, reset, findRobotArr}
 })()
-let playerOne = Player('x');
-let playerTwo = Player('o');
+
 const Game = (() => {
   let turnName = playerTwo;
-  const resetGame= () =>{
-    turnName = playerTwo;
-    displayControls.reset();
-    gameBoard.reset()
+  const robotTurn = () => {
+    const findRandomSquare = () => {
+      let randomSquare = document.getElementById(Math.floor(Math.random()*9));
+      if(randomSquare.textContent != '') return findRandomSquare();
+      else return randomSquare;
+      }
+    takeATurn(findRandomSquare());
+  }
+  
+  function newGame(mode){
+    gameBoard.reset();
+    displayControls.newGame();
+    setUpGame(mode);
   }
   // make takeATurn a pure function
   //add options for different robot 'people' to play
   //add more freedom with player one and two and x and o and names
+  // factory function
    const takeATurn = (square) => {
     turnName = switchTurns(turnName, playerOne, playerTwo);
     if(gameBoard.checkForWin(playerOne.symbol) || gameBoard.checkForWin(playerTwo.symbol)){return;}
@@ -63,18 +85,9 @@ const Game = (() => {
       displayControls.displayWin(turnName.symbol);
     }
     else if(gameBoard.checkForTie()) displayControls.displayTie();
-    if(playerTwo.type === 'robot' && turnName === playerOne ){
-      console.log('robot turn')
-      const findRandomSquare = () => {
-        let randomSquare = document.getElementById(Math.floor(Math.random()*9));
-        console.log(randomSquare)
-        if(randomSquare.textContent != '') return findRandomSquare();
-        else return randomSquare;
-        }
-      
-      takeATurn(findRandomSquare())
-    }
-  }
+    else if(playerTwo.type === 'robot' && turnName === playerOne ){
+      robotTurn()
+  }}
   const switchTurns = (turn, a, b) => {
     let newTurn;
      if(turn != a){
@@ -85,7 +98,7 @@ const Game = (() => {
      }
      return(newTurn)
   };
-  return {takeATurn, resetGame}
+  return {takeATurn, newGame}
  
   
 })();
@@ -95,27 +108,34 @@ const Game = (() => {
 
 const DOM = (()=>{
     return {
+      nameInputBox: document.createElement('input'),
       multiplayerBtn: document.querySelector(`#multiplayer-btn`),
       singlePlayerBtn : document.querySelector(`#singleplayer-btn`),
-      grid: document.querySelector('#grid'),
-      resetBtn:document.createElement('button'),
+      resetBtn: document.createElement('button'),
       winMessage:document.createElement('p'), 
-      exitBtn: document.createElement('button')}
+      exitBtn: document.createElement('button'),
+      gameContainer: document.createElement('div'),
+      chooseModeContainer: document.querySelector('.choose-div'),
+      grid: document.createElement('div')}
 })();
 const displayControls = (() => {
-  const reset = () => {
-    squares.forEach(square => square.textContent = '');
-    document.body.removeChild(DOM.resetBtn);
-    document.body.removeChild(DOM.winMessage)
-  }
   const addExitBtn = () => {
-
+    console.log('exit btn')
+    DOM.exitBtn.textContent = 'Exit';
+    DOM.exitBtn.setAttribute('id', 'reset-btn');
+    DOM.gameContainer.appendChild(DOM.exitBtn);
+    DOM.exitBtn.addEventListener('click', () => {
+       removeChildren(DOM.gameContainer);
+       document.body.appendChild(DOM.chooseModeContainer);
+    })
   }
   const addResetBtn = () => {
     DOM.resetBtn.textContent = 'New Game';
-    DOM.resetBtn.classList.add('reset-btn');
-    document.body.appendChild(DOM.resetBtn);
-    DOM.resetBtn.addEventListener('click', () => Game.resetGame())
+    DOM.resetBtn.setAttribute('id', 'reset-btn');
+    DOM.gameContainer.appendChild(DOM.resetBtn);
+    DOM.resetBtn.addEventListener('click', () => {
+      if(playerTwo.type === 'robot') Game.newGame('singleplayer');
+      else{Game.newGame('multiplayer')}})
 
   }
   const addSymbol = (symbol,square) => {
@@ -129,37 +149,49 @@ const displayControls = (() => {
   const addWinMessage = (content) => {
       DOM.winMessage.classList.add('win-message')
       DOM.winMessage.textContent = content;
-      document.body.appendChild(DOM.winMessage);
+      DOM.gameContainer.appendChild(DOM.winMessage);
   }
   const displayWin = (winner) => {
     addWinMessage(`${winner} has tic-tac-toe`);
+  };
+  const setUpGrid = () =>{
+    document.body.removeChild(DOM.chooseModeContainer);
+    if(document.body.contains(DOM.gameContainer)!= true){document.body.appendChild(DOM.gameContainer)};
+    DOM.gameContainer.classList.add('game-container')
+    addExitBtn();
     addResetBtn();
-  }
-  const setUpGrid = () => {
-    document.body.removeChild(DOM.singlePlayerBtn);
-    document.body.removeChild(DOM.multiplayerBtn);
+    DOM.grid.setAttribute('id', 'grid');
+    DOM.gameContainer.appendChild(DOM.grid);
+    removeChildren(DOM.grid);
     for(let i = 0; i < 9; i++){
       square = document.createElement('div');
       square.classList.add('square');
-      grid.appendChild(square);
+      DOM.grid.appendChild(square);
       square.setAttribute('id', i);
       squares = document.querySelectorAll('.square');
       square.textContent = '';
       }  
       squares.forEach(square =>
         square.addEventListener('click', ()=> Game.takeATurn(square))
-        ) 
-  };
+        ) }
+  const newGame = () => {
+    if(DOM.gameContainer.contains(DOM.grid) != true) setUpGrid();
+    DOM.winMessage.textContent = '';
+    squares.forEach(square => square.textContent = '');};
+
   DOM.multiplayerBtn.addEventListener('click', () =>{ 
-    setUpGrid();
-    
+    Game.newGame('multiplayer')
   });
   DOM.singlePlayerBtn.addEventListener('click', () => {
-    playerTwo.type = 'robot';
-    setUpGrid()
+    Game.newGame('singleplayer')
   })
-    return{addSymbol, displayWin, displayTie, reset}
+    return{addSymbol, displayWin, displayTie,  newGame, setUpGrid}
 })();
+
+const removeChildren = (parent) => {
+  while(parent.lastChild){
+     parent.removeChild(parent.lastChild)
+}};
 
 
 

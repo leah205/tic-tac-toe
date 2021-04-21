@@ -86,9 +86,6 @@ const displayControls = (()=>{
         })
    })};
    const createGrid = () => {
-       const removeAllChildren =(container) =>{
-        while(container.lastChild){container.removeChild(container.lastChild)}
-       }
        removeAllChildren(grid);
        removeAllChildren(messageContainer);
     for(let i = 0; i < 9; i++){
